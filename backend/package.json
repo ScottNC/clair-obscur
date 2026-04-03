@@ -1,0 +1,25 @@
+{
+  "type": "module",
+  "name": "clair-obscur",
+  "version": "1.0.0",
+  "description": "A chatbot to assist players of the game Clair Obscur: Expedition 33 with their queries about the game",
+  "main": "main.ts",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ScottNC/clair-obscur.git"
+  },
+  "author": "Scott Coleman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ScottNC/clair-obscur/issues"
+  },
+  "homepage": "https://github.com/ScottNC/clair-obscur#readme",
+  "dependencies": {
+    "@chroma-core/default-embed": "^0.1.9",
+    "chromadb": "^3.4.0",
+    "dotenv": "^17.4.0"
+  }
+}
