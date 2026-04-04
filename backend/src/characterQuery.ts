@@ -38,4 +38,4 @@ async function queryCharacters() {
   }
 }
 
-queryCharacters();
+await queryCharacters();

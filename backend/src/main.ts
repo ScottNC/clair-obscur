@@ -1,4 +1,4 @@
-import readline from "readline";
+import readline from "node:readline";
 import { getAnswer } from "./groqClient";
 
 const rl = readline.createInterface({
@@ -29,4 +29,4 @@ async function main () {
   askLoop();
 }
 
-main();
+await main();
