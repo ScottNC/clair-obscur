@@ -20,8 +20,10 @@
   "homepage": "https://github.com/ScottNC/clair-obscur#readme",
   "dependencies": {
     "@chroma-core/default-embed": "^0.1.9",
+    "@google/generative-ai": "^0.24.1",
     "chromadb": "^3.4.0",
-    "dotenv": "^17.4.0"
+    "dotenv": "^17.4.0",
+    "fs": "^0.0.1-security"
   },
   "devDependencies": {
     "tsx": "^4.21.0"
