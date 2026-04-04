@@ -5,6 +5,7 @@
   "description": "A chatbot to assist players of the game Clair Obscur: Expedition 33 with their queries about the game",
   "main": "main.ts",
   "scripts": {
+    "dev": "tsx src/main.ts",
     "populate": "tsx src/populate.ts",
     "character": "tsx src/characterQuery.ts"
   },
