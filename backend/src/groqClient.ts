@@ -41,12 +41,11 @@ async function queryWithGroq(question: string, context: string, retryCount: numb
         }
       ],
       model: "llama-3.3-70b-versatile",
-      temperature: 0.3,
+      temperature: 0.7,
       response_format: { type: "json_object" }
     });
-    
-    const text = chatCompletion.choices[0].message.content || "";
-    console.log("Raw response:", text);   
+
+    const text = chatCompletion.choices[0].message.content || "";  
     
     try {
       const json = JSON.parse(text);
