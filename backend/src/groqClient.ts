@@ -1,10 +1,10 @@
-import { CloudClient } from "chromadb";
 import Groq from 'groq-sdk';
 import dotenv from "dotenv";
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from "url";
 import { delay } from "./utils/delay";
+import { getChromaClient } from "./utils/getChromaClient";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,12 +13,6 @@ dotenv.config();
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
-});
-
-const client = new CloudClient({
-  apiKey: process.env.CHROMA_API_KEY,
-  tenant: process.env.CHROMA_TENANT,
-  database: 'clair-obscur-chatbot'
 });
 
 const instructions = fs.readFileSync(
@@ -83,6 +77,7 @@ async function queryWithGroq(question: string, context: string, retryCount: numb
 }
 
 export async function getAnswer(question: string): Promise<string> {
+  const client = getChromaClient();
   try {
     const collection = await client.getCollection({ name: "character-data" });
     const results = await collection.query({

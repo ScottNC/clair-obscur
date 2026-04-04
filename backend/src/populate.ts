@@ -1,6 +1,5 @@
-// scripts/populate-characters.ts
-import { CloudClient } from "chromadb";
 import dotenv from "dotenv";
+import { getChromaClient } from "./utils/getChromaClient";
 
 dotenv.config();
 
@@ -9,11 +8,6 @@ type Character = {
   content: string,
   metadata: any
 }
-const client = new CloudClient({
-  apiKey: process.env.CHROMA_API_KEY,
-  tenant: process.env.CHROMA_TENANT,
-  database: 'clair-obscur-chatbot'
-});
 
 const characters: Character[] = [
   {
@@ -59,6 +53,7 @@ const characters: Character[] = [
 ];
 
 async function populateCharacters() {
+  const client = getChromaClient();
   try {
     let collection;
     try {
