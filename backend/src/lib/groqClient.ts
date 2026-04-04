@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from "node:url";
-import { delay } from "./utils/delay";
-import { getChromaClient } from "./utils/getChromaClient";
+import { delay } from "../utils/delay";
+import { getChromaClient } from "../utils/getChromaClient";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

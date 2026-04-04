@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { getChromaClient } from "./utils/getChromaClient";
+import { getChromaClient } from "../utils/getChromaClient";
 
 dotenv.config();
 
@@ -52,7 +52,7 @@ const characters: Character[] = [
   }
 ];
 
-async function populateCharacters() {
+export async function populateCharacters() {
   const client = getChromaClient();
   try {
     let collection;
@@ -83,5 +83,3 @@ async function populateCharacters() {
     throw error;
   }
 }
-
-populateCharacters();

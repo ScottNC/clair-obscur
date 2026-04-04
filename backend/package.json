@@ -6,8 +6,8 @@
   "main": "main.ts",
   "scripts": {
     "dev": "tsx src/main.ts",
-    "populate": "tsx src/populate.ts",
-    "character": "tsx src/characterQuery.ts"
+    "populate": "tsx scripts/runPopulate.ts",
+    "character": "tsx scripts/characterQuery.ts"
   },
   "repository": {
     "type": "git",

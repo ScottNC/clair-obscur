@@ -1,5 +1,5 @@
-import { getAnswer } from "./groqClient";
-import { delay } from "./utils/delay";
+import { getAnswer } from "../src/lib/groqClient";
+import { delay } from "../src/utils/delay";
 
 async function queryCharacters() {
   try {

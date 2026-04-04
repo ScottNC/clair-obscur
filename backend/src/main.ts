@@ -1,5 +1,5 @@
 import readline from "node:readline";
-import { getAnswer } from "./groqClient";
+import { getAnswer } from "./lib/groqClient";
 
 const rl = readline.createInterface({
   input: process.stdin,
