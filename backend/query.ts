@@ -33,67 +33,130 @@ const instructions = fs.readFileSync(
   "utf-8"
 );
 
-async function queryWithGemini(question: string, context: string): Promise<string | null> {
-    const fullPrompt = `${instructions}
+// Helper function for delay
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-    RAG INFORMATION:
-    ${context}
+async function queryWithGemini(question: string, context: string, retryCount: number = 0): Promise<string | null> {
+  const fullPrompt = `${instructions}
 
-    USER QUESTION:
-    ${question}`;
+  RAG INFORMATION:
+  ${context}
 
-      try {
+  USER QUESTION:
+  ${question}`;
+
+  try {
     const result = await model.generateContent(fullPrompt);
     const response = result.response;
     const text = response.text();
+
+    let cleanedText = text.trim();
     
-    // Try to parse JSON from response
+    // Remove ```json at the start
+    if (cleanedText.startsWith('```json')) {
+      cleanedText = cleanedText.replace(/^```json\n?/, '');
+    }
+    // Remove ``` at the end
+    if (cleanedText.endsWith('```')) {
+      cleanedText = cleanedText.replace(/\n?```$/, '');
+    }
+    // Remove any other markdown code block markers
+    cleanedText = cleanedText.replace(/^```\n?/, '').replace(/\n?```$/, '');
+
+    console.log(cleanedText);
+    
     try {
-      const json = JSON.parse(text);
-      return json.message;
-    } catch {
-      // If response isn't valid JSON, return as is
-      return text;
+      const json = JSON.parse(cleanedText);
+      if (json.message && typeof json.message === 'string') {
+        return json.message;
+      } else {
+        throw new Error('Invalid JSON structure: missing "message" field');
+      }
+    } catch (parseError) {
+      console.error(parseError);
+      if (retryCount < 3) {
+        console.log(`⚠️ Invalid JSON response, retrying... (attempt ${retryCount + 1}/3)`);
+        console.log(`Received: ${text.substring(0, 100)}...`);
+        
+        const delayMs = 2000;
+        console.log(`⏳ Waiting ${delayMs/1000} seconds before retry...`);
+        await delay(delayMs);
+        
+        return queryWithGemini(question, context, retryCount + 1);
+      } else {
+        console.error("Failed to get valid JSON after 3 retries");
+        return null;
+      }
     }
   } catch (error) {
     console.error("Gemini API error:", error);
+    if (retryCount < 3) {
+      console.log(`⚠️ API error, retrying... (attempt ${retryCount + 1}/3)`);
+      const delayMs = Math.pow(2, retryCount) * 1000;
+      await delay(delayMs);
+      return queryWithGemini(question, context, retryCount + 1);
+    }
     return null;
+  }
+}
+
+async function getAnswer(question: string): Promise<string> {
+  try {
+    const collection = await client.getCollection({ name: "character-data" });
+    const results = await collection.query({
+      queryTexts: [question],
+      nResults: 2
+    });
+    
+    const ragContext = results.documents[0]?.join("\n\n") || "No information found.";
+    
+    const answer = await queryWithGemini(question, ragContext);
+    
+    if (answer) {
+      return answer;
+    } else {
+      return "Sorry, I couldn't generate a proper response. Please try again.";
+    }
+    
+  } catch (error) {
+    console.error("Error in getAnswer:", error);
+    return "Sorry, an error occurred while processing your question.";
   }
 }
 
 async function queryCharacters() {
   try {
-    const collection = await client.getCollection({ name: "character-data" });
-    console.log(`📚 Querying collection: character-data\n`);
-    
     const questions = [
       "Tell me about Lune",
       "What is Maelle's special ability?",
       "Who leads Expedition 33?",
-      "Who is Sonic the Hedgehog"
+      "Who is Sonic the Hedgehog?",
+      "Tell me about Maelle's foster brother"
     ];
     
-    for (const question of questions) {
-      console.log(`❓ Question: ${question}`);
+    for (let i = 0; i < questions.length; i++) {
+      const question = questions[i];
+      console.log(`\n${"=".repeat(50)}`);
+      console.log(`❓ Question ${i + 1}/${questions.length}: ${question}`);
+      console.log(`${"=".repeat(50)}`);
       
-      const results = await collection.query({
-        queryTexts: [question],
-        nResults: 1
-      });
-      
-      const ragContext = results.documents[0]?.join("\n\n") || "No information found.";
-      
-      console.log(`📚 Found ${results.documents[0]?.length || 0} relevant chunks`);
-      
-      // Get answer from Gemini
-      const answer = await queryWithGemini(question, ragContext);
+      const answer = await getAnswer(question);
       
       if (answer) {
         console.log(`✨ Answer: ${answer}`);
       } else {
         console.log(`❌ Failed to get answer`);
       }
+      
+      if (i < questions.length - 1) {
+        console.log(`\n⏳ Waiting 2 seconds before next question...\n`);
+        await delay(2000);
+      }
     }
+    
+    console.log(`\n✅ All questions processed!`);
     
   } catch (error) {
     console.error("Error querying:", error);
