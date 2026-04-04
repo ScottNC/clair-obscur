@@ -1,10 +1,11 @@
+// src/lib/groqClient.ts
 import Groq from 'groq-sdk';
 import dotenv from "dotenv";
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from "node:url";
-import { delay } from "../utils/delay";
-import { getChromaClient } from "../utils/getChromaClient";
+import { delay } from "../utils/delay.js";
+import { getChromaClient } from "../utils/getChromaClient.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,6 +14,11 @@ dotenv.config();
 
 let mockGroq: any = null;
 let mockChromaClient: any = null;
+
+interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
 
 export function setMockGroq(mock: any) {
   mockGroq = mock;
@@ -35,21 +41,43 @@ const instructions = fs.readFileSync(
   "utf-8"
 );
 
-async function queryWithGroq(question: string, context: string, retryCount: number = 0): Promise<string | null> {
+// Build messages array with conversation history
+function buildMessages(question: string, context: string, history: Message[] = []) : Message[] {
+  const messages: Message[] = [
+    {
+      role: "system",
+      content: instructions + "\n\n" + "Context:\n" + context
+    }
+  ];
+  
+  for (const msg of history) {
+    messages.push({
+      role: msg.role,
+      content: msg.content
+    });
+  }
+  
+  messages.push({
+    role: "user",
+    content: question
+  });
+  
+  return messages;
+}
+
+async function queryWithGroq(
+  question: string, 
+  context: string, 
+  history: Message[] = [],
+  retryCount: number = 0
+): Promise<string | null> {
   const groq = getGroq();
+  
+  const messages = buildMessages(question, context, history);
   
   try {
     const chatCompletion = await groq.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content: instructions
-        },
-        {
-          role: "user",
-          content: `Context: ${context} : Question: ${question}`
-        }
-      ],
+      messages: messages,
       model: "llama-3.3-70b-versatile",
       temperature: 0.7,
       response_format: { type: "json_object" }
@@ -73,8 +101,7 @@ async function queryWithGroq(question: string, context: string, retryCount: numb
         const delayMs = 2000;
         console.log(`⏳ Waiting ${delayMs/1000} seconds before retry...`);
         await delay(delayMs);
-        
-        return queryWithGroq(question, context, retryCount + 1);
+        return queryWithGroq(question, context, history, retryCount + 1);
       } else {
         console.error("Failed to get valid JSON after 3 retries");
         return null;
@@ -86,13 +113,13 @@ async function queryWithGroq(question: string, context: string, retryCount: numb
       console.log(`⚠️ API error, retrying... (attempt ${retryCount + 1}/3)`);
       const delayMs = Math.pow(2, retryCount) * 1000;
       await delay(delayMs);
-      return queryWithGroq(question, context, retryCount + 1);
+      return queryWithGroq(question, context, history, retryCount + 1);
     }
     return null;
   }
 }
 
-export async function getAnswer(question: string): Promise<string> {
+export async function getAnswer(question: string, history: Message[] = []): Promise<string> {
   const client = getChroma();
   try {
     const collection = await client.getCollection({ name: "character-data" });
@@ -103,7 +130,7 @@ export async function getAnswer(question: string): Promise<string> {
     
     const ragContext = results.documents[0]?.join("\n\n") || "No information found.";
 
-    const answer = await queryWithGroq(question, ragContext);
+    const answer = await queryWithGroq(question, ragContext, history);
     
     if (answer) {
       return answer;
