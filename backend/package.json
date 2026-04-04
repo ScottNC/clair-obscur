@@ -5,8 +5,8 @@
   "description": "A chatbot to assist players of the game Clair Obscur: Expedition 33 with their queries about the game",
   "main": "main.ts",
   "scripts": {
-    "populate": "tsx populate.ts",
-    "query": "tsx query.ts"
+    "populate": "tsx src/populate.ts",
+    "character": "tsx src/characterQuery.ts"
   },
   "repository": {
     "type": "git",
@@ -23,7 +23,8 @@
     "@google/generative-ai": "^0.24.1",
     "chromadb": "^3.4.0",
     "dotenv": "^17.4.0",
-    "fs": "^0.0.1-security"
+    "fs": "^0.0.1-security",
+    "groq-sdk": "^1.1.2"
   },
   "devDependencies": {
     "tsx": "^4.21.0"
