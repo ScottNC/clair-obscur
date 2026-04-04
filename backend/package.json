@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "tsx src/main.ts",
     "populate": "tsx scripts/runPopulate.ts",
-    "character": "tsx scripts/characterQuery.ts"
+    "character": "tsx scripts/characterQuery.ts",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,12 @@
     "groq-sdk": "^1.1.2"
   },
   "devDependencies": {
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5",
+    "testdouble": "^3.20.2",
+    "ts-node": "^10.9.2",
     "tsx": "^4.21.0"
   }
 }

@@ -11,17 +11,33 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
-});
+let mockGroq: any = null;
+let mockChromaClient: any = null;
+
+export function setMockGroq(mock: any) {
+  mockGroq = mock;
+}
+
+export function setMockChromaClient(mock: any) {
+  mockChromaClient = mock;
+}
+
+function getGroq() {
+  return mockGroq || new Groq({ apiKey: process.env.GROQ_API_KEY });
+}
+
+function getChroma() {
+  return mockChromaClient || getChromaClient();
+}
 
 const instructions = fs.readFileSync(
-  path.join(__dirname, "../prompts/instructions.txt"), 
+  path.join(__dirname, "../../prompts/instructions.txt"), 
   "utf-8"
 );
 
 async function queryWithGroq(question: string, context: string, retryCount: number = 0): Promise<string | null> {
-
+  const groq = getGroq();
+  
   try {
     const chatCompletion = await groq.chat.completions.create({
       messages: [
@@ -77,7 +93,7 @@ async function queryWithGroq(question: string, context: string, retryCount: numb
 }
 
 export async function getAnswer(question: string): Promise<string> {
-  const client = getChromaClient();
+  const client = getChroma();
   try {
     const collection = await client.getCollection({ name: "character-data" });
     const results = await collection.query({
