@@ -1,8 +1,4 @@
-// src/utils/chunker.ts
-export interface TextChunk {
-  content: string;
-  metadata: Record<string, any>;
-}
+import { TextChunk } from "../types/chunk";
 
 function splitLongParagraph(
   trimmedParagraph: string,

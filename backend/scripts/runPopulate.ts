@@ -1,3 +1,5 @@
-import { populateCharacters } from "../src/lib/populateChroma";
+import { populateAllCollections } from "../src/lib/populateChroma";
 
-await populateCharacters();
+console.log("🚀 Starting to populate all collections...");
+await populateAllCollections();
+console.log("✨ Done!");

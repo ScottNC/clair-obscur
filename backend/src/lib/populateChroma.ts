@@ -1,9 +1,10 @@
-// src/lib/populateChroma.ts
 import dotenv from "dotenv";
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { getChromaClient } from "../utils/getChromaClient";
-import { GUIDE_URLS } from "../config/urls";
+import { COLLECTION_CONFIG } from "../config/urls";
+import { TextChunk } from "../types/chunk";
+import { chunkText } from "../utils/chuncker";
 
 dotenv.config();
 
@@ -15,10 +16,11 @@ interface ScrapedContent {
     type: string;
     title: string;
     url?: string;
+    collection: string;
   };
 }
 
-async function scrapeWikiPages(urlsToScrape: typeof GUIDE_URLS) {
+async function scrapeWikiPages(urlsToScrape: any[]): Promise<ScrapedContent[]> {
   const scrapedData: ScrapedContent[] = [];
   
   for (const pageInfo of urlsToScrape) {
@@ -30,7 +32,7 @@ async function scrapeWikiPages(urlsToScrape: typeof GUIDE_URLS) {
       
       let title = $('h1').first().text().trim();
       if (!title || title === 'Maxroll' || title === 'Home') {
-        title = `${pageInfo.name} Skills Guide`;
+        title = pageInfo.name;
       }
       
       let mainContent = $('article').text().trim();
@@ -44,7 +46,7 @@ async function scrapeWikiPages(urlsToScrape: typeof GUIDE_URLS) {
       mainContent = mainContent.replaceAll(/\s+/g, ' ').trim();
       
       if (mainContent && mainContent.length > 100) {
-        const id = `web_${title.toLowerCase().replaceAll(/\s+/g, '_')}`;
+        const id = `web_${pageInfo.collection}_${pageInfo.name.toLowerCase().replaceAll(/\s+/g, '_')}`;
         
         scrapedData.push({
           id: id,
@@ -53,7 +55,8 @@ async function scrapeWikiPages(urlsToScrape: typeof GUIDE_URLS) {
             source: 'maxroll',
             type: pageInfo.type,
             title: title,
-            url: pageInfo.url
+            url: pageInfo.url,
+            collection: pageInfo.collection
           }
         });
         
@@ -62,6 +65,7 @@ async function scrapeWikiPages(urlsToScrape: typeof GUIDE_URLS) {
         console.log(`⚠️ No substantial content found for: ${pageInfo.url}`);
       }
       
+      // Be respectful - delay between requests
       await new Promise(resolve => setTimeout(resolve, 1000));
       
     } catch (error) {
@@ -72,45 +76,76 @@ async function scrapeWikiPages(urlsToScrape: typeof GUIDE_URLS) {
   return scrapedData;
 }
 
-// Accept chromaClient as a parameter for testing
-export async function populateCharacters(
-  urlsToScrape = GUIDE_URLS,
+export async function populateCollection(
+  collectionName: string,
+  urlsToScrape: any[],
   chromaClient = getChromaClient()
 ) {
   try {
     let collection;
     try {
-      collection = await chromaClient.getCollection({ name: "character-data" });
-      console.log("📁 Loaded existing collection");
-      
-      const count = await collection.count();
-      console.log(`   Current documents: ${count}`);
-      
+      collection = await chromaClient.getCollection({ name: collectionName });
+      console.log(`📁 Loaded existing collection: ${collectionName}`);
     } catch {
-      throw new Error("Error getting collection. Please make sure collection exists.")
+      collection = await chromaClient.createCollection({ name: collectionName });
+      console.log(`✨ Created new collection: ${collectionName}`);
     }
     
-    console.log("\n🕷️ Starting web scraping with Cheerio...");
-    const characterData = await scrapeWikiPages(urlsToScrape);
+    const count = await collection.count();
+    console.log(`   Current documents in ${collectionName}: ${count}`);
     
-    if (characterData.length === 0) {
-      console.log("⚠️ No data scraped. Check the URLs and selectors.");
+    console.log(`\n🕷️ Starting web scraping for ${collectionName}...`);
+    const scrapedData = await scrapeWikiPages(urlsToScrape);
+    
+    if (scrapedData.length === 0) {
+      console.log(`⚠️ No data scraped for ${collectionName}. Check the URLs and selectors.`);
       return;
     }
     
-    console.log(`\n📝 Adding ${characterData.length} documents to database...`);
+    console.log(`\n✂️ Chunking ${scrapedData.length} documents...`);
+    const allChunks: TextChunk[] = [];
+    
+    for (const item of scrapedData) {
+      const chunks = chunkText(item.content, item.metadata, 1000);
+      
+      const chunkedItems = chunks.map((chunk, index) => ({
+        id: `${item.id}_chunk_${index}`,
+        content: chunk.content,
+        metadata: {
+          ...chunk.metadata,
+          chunkIndex: index,
+          totalChunks: chunks.length,
+          originalId: item.id
+        }
+      }));
+      
+      allChunks.push(...chunkedItems);
+      
+      if (chunks.length > 1) {
+        console.log(`   📄 ${item.metadata.title}: split into ${chunks.length} chunks`);
+      }
+    }
+    
+    console.log(`\n📝 Adding ${allChunks.length} chunks to ${collectionName}...`);
     
     await collection.add({
-      ids: characterData.map(d => d.id),
-      documents: characterData.map(d => d.content),
-      metadatas: characterData.map(d => d.metadata)
+      ids: allChunks.map(c => c.id || `chunk_${Math.random().toString(36).substring(2, 15)}`),
+      documents: allChunks.map(c => c.content),
+      metadatas: allChunks.map(c => c.metadata)
     });
     
     const newCount = await collection.count();
-    console.log(`✅ Successfully added! Total documents in Chroma: ${newCount}`);
+    console.log(`✅ Successfully added! Total documents in ${collectionName}: ${newCount}`);
     
   } catch (error) {
-    console.error("❌ Error populating from web:", error);
+    console.error(`❌ Error populating ${collectionName}:`, error);
     throw error;
   }
+}
+
+export async function populateAllCollections(chromaClient = getChromaClient()) {
+  for (const config of COLLECTION_CONFIG) {
+    await populateCollection(config.name, config.urls, chromaClient);
+  }
+  console.log("\n🎉 All collections populated successfully!");
 }
