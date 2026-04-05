@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "A chatbot to assist players of the game Clair Obscur: Expedition 33 with their queries about the game",
   "main": "main.ts",
+  "overrides": {
+    "serialize-javascript": "7.0.5"
+  },
   "scripts": {
     "dev": "tsx src/main.ts",
     "populate": "tsx scripts/runPopulate.ts",
@@ -26,7 +29,9 @@
     "axios": "^1.14.0",
     "cheerio": "^1.2.0",
     "chromadb": "^3.4.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.0",
+    "express": "^5.2.1",
     "fs": "^0.0.1-security",
     "groq-sdk": "^1.1.2",
     "playwright": "^1.59.1"
@@ -34,6 +39,8 @@
   "devDependencies": {
     "@types/chai": "^5.2.3",
     "@types/cheerio": "^0.22.35",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/mocha": "^10.0.10",
     "chai": "^6.2.2",
     "mocha": "^11.7.5",
