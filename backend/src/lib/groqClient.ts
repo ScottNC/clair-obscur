@@ -4,8 +4,9 @@ import dotenv from "dotenv";
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from "node:url";
-import { delay } from "../utils/delay.js";
-import { getChromaClient } from "../utils/getChromaClient.js";
+import { delay } from "../utils/delay";
+import { getChromaClient } from "../utils/getChromaClient";
+import { Message } from '../types/message';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,11 +15,6 @@ dotenv.config();
 
 let mockGroq: any = null;
 let mockChromaClient: any = null;
-
-interface Message {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-}
 
 export function setMockGroq(mock: any) {
   mockGroq = mock;

@@ -1,12 +1,6 @@
 import readline from "node:readline";
 import { getAnswer } from "./lib/groqClient.js";
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
-let conversationHistory: Message[] = [];
+import { Message } from "./types/message.js";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -14,6 +8,8 @@ const rl = readline.createInterface({
 });
 
 async function main() {
+  let conversationHistory: Message[] = [];
+  
   console.log("\n🎮 CLAIR OBSCUR: EXPEDITION 33 - RAG ASSISTANT");
   console.log("\nAsk me anything about the game!");
 

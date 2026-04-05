@@ -3,7 +3,7 @@ import { describe, it, beforeEach } from 'mocha';
 import { expect } from 'chai';
 import axios from 'axios';
 import * as td from 'testdouble';
-import { populateCharacters } from '../src/lib/populateChroma.js';
+import { populateCharacters } from '../src/lib/populateChroma';
 
 const MOCK_TEST_URLS = [
   {
@@ -77,7 +77,6 @@ describe('populateCharacters', () => {
       count: async () => 0,
       add: async (args: any) => {
         capturedAddArgs = args;
-        return Promise.resolve();
       },
       name: 'character-data'
     };
@@ -137,7 +136,6 @@ describe('populateCharacters', () => {
       count: async () => 0,
       add: async (args: any) => {
         capturedAddArgs = args;
-        return Promise.resolve();
       },
       name: 'character-data'
     };

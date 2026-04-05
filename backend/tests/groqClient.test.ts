@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'mocha';
 import { expect } from 'chai';
-import { setMockGroq, setMockChromaClient, getAnswer } from '../src/lib/groqClient.js';
+import { setMockGroq, setMockChromaClient, getAnswer } from '../src/lib/groqClient';
 
 describe('getAnswer', function() {
   beforeEach(() => {

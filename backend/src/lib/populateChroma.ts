@@ -2,8 +2,8 @@
 import dotenv from "dotenv";
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { getChromaClient } from "../utils/getChromaClient.js";
-import { GUIDE_URLS } from "../config/urls.js";
+import { getChromaClient } from "../utils/getChromaClient";
+import { GUIDE_URLS } from "../config/urls";
 
 dotenv.config();
 
