@@ -43,7 +43,7 @@ async function scrapeWikiPages(urlsToScrape: any[]): Promise<ScrapedContent[]> {
         mainContent = $('body').text().trim();
       }
       
-      mainContent = mainContent.replaceAll(/\s+/g, ' ').trim();
+      mainContent = mainContent.replaceAll(/\s+/g, ' ').replaceAll(/([a-z])([A-Z])/g, '$1 $2').trim();
       
       if (mainContent && mainContent.length > 100) {
         const id = `web_${pageInfo.collection}_${pageInfo.name.toLowerCase().replaceAll(/\s+/g, '_')}`;
