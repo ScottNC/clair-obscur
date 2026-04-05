@@ -1,4 +1,3 @@
-// src/lib/groqClient.ts
 import Groq from 'groq-sdk';
 import dotenv from "dotenv";
 import fs from 'node:fs';
@@ -6,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from "node:url";
 import { delay } from "../utils/delay";
 import { getChromaClient } from "../utils/getChromaClient";
-import { Message } from '../types/message';
+import { COLLECTION_CONFIG } from '../config/urls';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,20 +36,28 @@ const instructions = fs.readFileSync(
   "utf-8"
 );
 
+interface Message {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
 // Build messages array with conversation history
-function buildMessages(question: string, context: string, history: Message[] = []) : Message[] {
+function buildMessages(question: string, context: string, history: Message[] = []): Message[] {
   const messages: Message[] = [
     {
       role: "system",
-      content: instructions + "\n\n" + "Context:\n" + context
+      content: instructions + "\n\n" + "Relevant Game Information:\n" + context
     }
   ];
   
+  // Add conversation history (excluding the system message)
   for (const msg of history) {
-    messages.push({
-      role: msg.role,
-      content: msg.content
-    });
+    if (msg.role !== 'system') {
+      messages.push({
+        role: msg.role,
+        content: msg.content
+      });
+    }
   }
   
   messages.push({
@@ -115,18 +122,63 @@ async function queryWithGroq(
   }
 }
 
+// Search across multiple collections and combine results
+async function searchAllCollections(question: string, chromaClient: any) {
+  const allResults: { document: string; metadata: any; distance: number }[] = [];
+  
+  for (const config of COLLECTION_CONFIG) {
+    try {
+      const collection = await chromaClient.getCollection({ name: config.name });
+      const results = await collection.query({
+        queryTexts: [question],
+        nResults: 5
+      });
+      
+      if (results.documents[0] && results.documents[0].length > 0) {
+        for (let i = 0; i < results.documents[0].length; i++) {
+          allResults.push({
+            document: results.documents[0][i],
+            metadata: results.metadatas[0][i],
+            distance: results.distances[0]?.[i] || 1
+          });
+        }
+        console.log(`   📚 Found ${results.documents[0].length} results in ${config.name}`);
+      }
+    } catch (error) {
+      console.error(`Error querying collection ${config.name}:`, error);
+    }
+  }
+  
+  allResults.sort((a, b) => a.distance - b.distance);
+  
+  const topResults = allResults.slice(0, 10);
+  const context = topResults.map(r => r.document).join("\n\n---\n\n");
+  const sources = topResults.map(r => ({
+    title: r.metadata.title,
+    type: r.metadata.type,
+    collection: r.metadata.collection
+  }));
+  
+  return { context, sources };
+}
+
 export async function getAnswer(question: string, history: Message[] = []): Promise<string> {
   const client = getChroma();
   try {
-    const collection = await client.getCollection({ name: "character-data" });
-    const results = await collection.query({
-      queryTexts: [question],
-      nResults: 2
+    console.log("\n🔍 Searching all collections for relevant information...");
+    const { context, sources } = await searchAllCollections(question, client);
+    
+    if (!context || context === "No information found.") {
+      console.log("   No relevant information found in any collection.");
+      return "I couldn't find any information about that in the game guides. Please try asking something else about Clair Obscur: Expedition 33.";
+    }
+    
+    console.log(`   📖 Using context from ${sources.length} sources:`);
+    sources.forEach(source => {
+      console.log(`      - ${source.title} (${source.type})`);
     });
     
-    const ragContext = results.documents[0]?.join("\n\n") || "No information found.";
-
-    const answer = await queryWithGroq(question, ragContext, history);
+    const answer = await queryWithGroq(question, context, history);
     
     if (answer) {
       return answer;
