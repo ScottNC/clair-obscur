@@ -1,45 +1,17 @@
-import readline from "node:readline";
-import { getAnswer } from "./lib/groqClient.js";
-import { Message } from "./types/message.js";
+import express from 'express';
+import cors from 'cors';
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.use(cors());
+app.use(express.json());
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-async function main() {
-  let conversationHistory: Message[] = [];
-  
-  console.log("\n🎮 CLAIR OBSCUR: EXPEDITION 33 - RAG ASSISTANT");
-  console.log("\nAsk me anything about the game!");
-
-  const askLoop = () => {
-    rl.question("👤 You: ", async (input: string) => {
-      if (!input.trim()) {
-        console.log("\n🤖 Assistant: Please ask a question.\n");
-        askLoop();
-        return;
-      }
-      
-      conversationHistory.push({
-        role: 'user',
-        content: input
-      });
-      
-      const answer = await getAnswer(input, conversationHistory);
-      
-      conversationHistory.push({
-        role: 'assistant',
-        content: answer
-      });
-      
-      console.log(`\n🤖 Assistant: ${answer}\n`);
-      
-      askLoop();
-    });
-  };
-  
-  askLoop();
-}
-
-await main();
+app.listen(PORT, () => {
+  console.log(`\n🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📡 Health check: http://localhost:${PORT}/health`);
+});

@@ -11,6 +11,7 @@
     "dev": "tsx src/main.ts",
     "populate": "tsx scripts/runPopulate.ts",
     "character": "tsx scripts/characterQuery.ts",
+    "chat": "tsx src/chat.ts",
     "test": "mocha"
   },
   "repository": {
