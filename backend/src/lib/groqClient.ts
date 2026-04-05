@@ -162,11 +162,23 @@ async function searchAllCollections(question: string, chromaClient: any) {
   return { context, sources };
 }
 
+function buildContextualQuery(question: string, history: Message[]): string {
+  if (history.length === 0) {
+    return question;
+  }
+  
+  const historyText = history.map(msg => 
+    `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+  ).join('\n');
+  
+  return `Conversation so far:\n${historyText}\n\nCurrent question: ${question}`;
+}
+
 export async function getAnswer(question: string, history: Message[] = []): Promise<string> {
   const client = getChroma();
   try {
     console.log("\n🔍 Searching all collections for relevant information...");
-    const { context, sources } = await searchAllCollections(question, client);
+    const { context, sources } = await searchAllCollections(buildContextualQuery(question, history), client);
     
     if (!context || context === "No information found.") {
       console.log("   No relevant information found in any collection.");

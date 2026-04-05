@@ -1,4 +1,3 @@
-// tests/unit/chunker.test.ts
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { chunkText } from '../src/lib/chuncker';
