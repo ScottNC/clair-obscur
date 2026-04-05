@@ -4,7 +4,7 @@ import * as cheerio from 'cheerio';
 import { getChromaClient } from "../utils/getChromaClient";
 import { COLLECTION_CONFIG } from "../config/urls";
 import { TextChunk } from "../types/chunk";
-import { chunkText } from "../utils/chuncker";
+import { chunkText } from "./chuncker";
 
 dotenv.config();
 

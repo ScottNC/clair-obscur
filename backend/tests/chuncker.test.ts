@@ -1,7 +1,7 @@
 // tests/unit/chunker.test.ts
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { chunkText } from '../src/utils/chuncker';
+import { chunkText } from '../src/lib/chuncker';
 
 describe('chunker', () => {
   it('should return a single chunk for short text', () => {
