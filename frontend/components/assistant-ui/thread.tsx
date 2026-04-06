@@ -167,6 +167,7 @@ const ComposerAction: FC = () => {
             size="icon"
             className="aui-composer-send size-8 rounded-full"
             aria-label="Send message"
+            disabled={false}
           >
             <ArrowUpIcon className="aui-composer-send-icon size-4" />
           </TooltipIconButton>
