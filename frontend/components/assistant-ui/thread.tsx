@@ -32,6 +32,7 @@ import {
   RefreshCwIcon,
   SquareIcon,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import type { FC } from "react";
 
 export const Thread: FC = () => {
@@ -74,6 +75,14 @@ const ThreadMessage: FC = () => {
 };
 
 const ThreadScrollToBottom: FC = () => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <ThreadPrimitive.ScrollToBottom asChild>
       <TooltipIconButton
