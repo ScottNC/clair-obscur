@@ -220,7 +220,7 @@ const AssistantMessage: FC = () => {
     >
       <div className="aui-assistant-message-content wrap-break-word rounded-3xl bg-assistant/70 px-4 py-3 text-foreground leading-relaxed shadow-sm">
         {isEmpty ? (
-          <div className="flex items-center gap-2 min-h-8">
+          <div className="flex items-center gap-2 min-h-8 pl-1">
             <div className="flex gap-1">
               <span className="size-2 rounded-full bg-muted-foreground animate-bounce"/>
               <span className="size-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0.1s" }}/>
