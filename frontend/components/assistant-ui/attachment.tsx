@@ -50,7 +50,7 @@ const useAttachmentSrc = () => {
     useShallow((s): { file?: File; src?: string } => {
       if (s.attachment.type !== "image") return {};
       if (s.attachment.file) return { file: s.attachment.file };
-      const src = s.attachment.content?.filter((c) => c.type === "image")[0]
+      const src = s.attachment.content?.find((c) => c.type === "image")
         ?.image;
       if (!src) return {};
       return { src };
@@ -69,7 +69,7 @@ const AttachmentPreview: FC<AttachmentPreviewProps> = ({ src }) => {
   return (
     <img
       src={src}
-      alt="Image Preview"
+      alt="Preview"
       className={cn(
         "block h-auto max-h-[80vh] w-auto max-w-full object-contain",
         isLoaded
@@ -153,13 +153,12 @@ const AttachmentUI: FC = () => {
       >
         <AttachmentPreviewDialog>
           <TooltipTrigger asChild>
-            <div
+            <button
               className="aui-attachment-tile size-14 cursor-pointer overflow-hidden rounded-[calc(var(--composer-radius)-var(--composer-padding))] border bg-muted transition-opacity hover:opacity-75"
-              role="button"
               aria-label={`${typeLabel} attachment`}
             >
               <AttachmentThumb />
-            </div>
+            </button>
           </TooltipTrigger>
         </AttachmentPreviewDialog>
         {isComposer && <AttachmentRemove />}
