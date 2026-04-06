@@ -210,20 +210,33 @@ const MessageError: FC = () => {
 };
 
 const AssistantMessage: FC = () => {
+  const parts = useAuiState((s) => s.message.parts);
+  const isEmpty = parts.length === 0;
+
   return (
     <MessagePrimitive.Root
       className="aui-assistant-message-root fade-in slide-in-from-bottom-1 relative mx-auto w-full max-w-(--thread-max-width) animate-in py-3 duration-150"
       data-role="assistant"
     >
       <div className="aui-assistant-message-content wrap-break-word rounded-3xl bg-assistant/70 px-4 py-3 text-foreground leading-relaxed shadow-sm">
-        <MessagePrimitive.Parts>
-          {({ part }) => {
-            if (part.type === "text") return <MarkdownText />;
-            if (part.type === "tool-call")
-              return part.toolUI ?? <ToolFallback {...part} />;
-            return null;
-          }}
-        </MessagePrimitive.Parts>
+        {isEmpty ? (
+          <div className="flex items-center gap-2 min-h-8">
+            <div className="flex gap-1">
+              <span className="size-2 rounded-full bg-muted-foreground animate-bounce"/>
+              <span className="size-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0.1s" }}/>
+              <span className="size-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0.2s" }}/>
+            </div>
+          </div>
+        ) : (
+          <MessagePrimitive.Parts>
+            {({ part }) => {
+              if (part.type === "text") return <MarkdownText />;
+              if (part.type === "tool-call")
+                return part.toolUI ?? <ToolFallback {...part} />;
+              return null;
+            }}
+          </MessagePrimitive.Parts>
+        )}
         <MessageError />
       </div>
 
