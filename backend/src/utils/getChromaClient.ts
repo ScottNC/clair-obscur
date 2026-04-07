@@ -4,7 +4,7 @@ export const getChromaClient = () => {
   const client = new CloudClient({
     apiKey: process.env.CHROMA_API_KEY,
     tenant: process.env.CHROMA_TENANT,
-    database: 'clair-obscur-chatbot'
+    database: process.env.CHROMA_DATABASE
   });
 
   return client;
