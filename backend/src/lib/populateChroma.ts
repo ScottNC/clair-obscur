@@ -20,6 +20,83 @@ interface ScrapedContent {
   };
 }
 
+// Source detection
+function isIgnUrl(url: string): boolean {
+  return url.includes('ign.com');
+}
+
+function isMaxrollUrl(url: string): boolean {
+  return url.includes('maxroll.gg');
+}
+
+// Extract title based on source
+function extractTitle($: cheerio.CheerioAPI, url: string, fallbackName: string): string {
+  let title = '';
+  
+  if (isIgnUrl(url)) {
+    // IGN: look for h1 inside main-content or with display-title class
+    const mainContent = $('#main-content');
+    if (mainContent.length) {
+      title = mainContent.find('h1.display-title').first().text().trim();
+      if (!title) {
+        title = mainContent.find('h1').first().text().trim();
+      }
+    }
+    if (!title) {
+      title = $('h1.display-title').first().text().trim();
+    }
+    if (!title) {
+      title = $('h1').first().text().trim();
+    }
+  } else if (isMaxrollUrl(url)) {
+    // Maxroll: standard h1
+    title = $('h1').first().text().trim();
+  } else {
+    // Generic fallback
+    title = $('h1').first().text().trim();
+  }
+  
+  // Fallback to provided name if title is generic or empty
+  if (!title || title === 'Maxroll' || title === 'Home' || title === 'IGN' || title === 'Wikis') {
+    title = fallbackName;
+  }
+  
+  return title;
+}
+
+// Extract content from Maxroll
+function extractMaxrollContent($: cheerio.CheerioAPI): string {
+  let content = $('article').text().trim();
+  if (!content) {
+    content = $('.main-content').text().trim();
+  }
+  if (!content) {
+    content = $('body').text().trim();
+  }
+  return content;
+}
+
+// Extract content from IGN
+function extractIgnContent($: cheerio.CheerioAPI): string {
+  const mainElement = $('#main-content');
+  if (mainElement.length) {
+    // Clone to avoid modifying original
+    const clone = mainElement.clone();
+    // Remove unwanted elements
+    clone.find('script, style, iframe, .ad, .advertisement, nav, header, footer, .related-content, .sidebar, .social-share').remove();
+    return clone.text().trim();
+  }
+  return $('article').text().trim();
+}
+
+// Clean text: normalize whitespace and fix concatenated words
+function cleanText(text: string): string {
+  return text
+    .replaceAll(/\s+/g, ' ')
+    .replaceAll(/([a-z])([A-Z])/g, '$1 $2')
+    .trim();
+}
+
 async function scrapeWikiPages(urlsToScrape: any[]): Promise<ScrapedContent[]> {
   const scrapedData: ScrapedContent[] = [];
   
@@ -30,20 +107,19 @@ async function scrapeWikiPages(urlsToScrape: any[]): Promise<ScrapedContent[]> {
       const { data } = await axios.get(pageInfo.url);
       const $ = cheerio.load(data);
       
-      let title = $('h1').first().text().trim();
-      if (!title || title === 'Maxroll' || title === 'Home') {
-        title = pageInfo.name;
+      // Extract title based on source
+      const title = extractTitle($, pageInfo.url, pageInfo.name);
+      
+      // Extract content based on source
+      let mainContent = '';
+      if (isIgnUrl(pageInfo.url)) {
+        mainContent = extractIgnContent($);
+      } else {
+        mainContent = extractMaxrollContent($);
       }
       
-      let mainContent = $('article').text().trim();
-      if (!mainContent) {
-        mainContent = $('.main-content').text().trim();
-      }
-      if (!mainContent) {
-        mainContent = $('body').text().trim();
-      }
-      
-      mainContent = mainContent.replaceAll(/\s+/g, ' ').replaceAll(/([a-z])([A-Z])/g, '$1 $2').trim();
+      // Clean the content
+      mainContent = cleanText(mainContent);
       
       if (mainContent && mainContent.length > 100) {
         const id = `web_${pageInfo.collection}_${pageInfo.name.toLowerCase().replaceAll(/\s+/g, '_')}`;
@@ -52,7 +128,7 @@ async function scrapeWikiPages(urlsToScrape: any[]): Promise<ScrapedContent[]> {
           id: id,
           content: mainContent,
           metadata: {
-            source: 'maxroll',
+            source: isIgnUrl(pageInfo.url) ? 'ign' : 'maxroll',
             type: pageInfo.type,
             title: title,
             url: pageInfo.url,
@@ -60,7 +136,7 @@ async function scrapeWikiPages(urlsToScrape: any[]): Promise<ScrapedContent[]> {
           }
         });
         
-        console.log(`✅ Scraped: ${title} (${mainContent.length} characters)`);
+        console.log(`✅ Scraped: ${title} (${mainContent.length} characters) from ${isIgnUrl(pageInfo.url) ? 'IGN' : 'Maxroll'}`);
       } else {
         console.log(`⚠️ No substantial content found for: ${pageInfo.url}`);
       }
