@@ -103,7 +103,7 @@ npm run test
 
 ## Acknowledgments
 
-- Maxroll.gg for comprehensive game guides
+- Maxroll.gg and IGN for comprehensive game guides
 - Groq for an LLM server
 - Chroma for vector database
 - assistant-ui for chat UI components
