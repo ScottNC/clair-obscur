@@ -1,0 +1,31 @@
+{
+  "name": "clair-obscur",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+    "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build",
+    "populate": "cd backend && npm run populate"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ScottNC/clair-obscur.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ScottNC/clair-obscur/issues"
+  },
+  "homepage": "https://github.com/ScottNC/clair-obscur#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
