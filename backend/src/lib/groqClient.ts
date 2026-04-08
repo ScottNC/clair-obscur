@@ -14,6 +14,7 @@ dotenv.config();
 
 let mockGroq: any = null;
 let mockChromaClient: any = null;
+let mockCollectionConfig: any = null;
 
 export function setMockGroq(mock: any) {
   mockGroq = mock;
@@ -23,12 +24,20 @@ export function setMockChromaClient(mock: any) {
   mockChromaClient = mock;
 }
 
+export function setMockCollectionConfig(mock: any) {
+  mockCollectionConfig = mock;
+}
+
 function getGroq() {
   return mockGroq || new Groq({ apiKey: process.env.GROQ_API_KEY });
 }
 
 function getChroma() {
   return mockChromaClient || getChromaClient();
+}
+
+function getCollectionConfig() {
+  return mockCollectionConfig || COLLECTION_CONFIG;
 }
 
 const instructions = fs.readFileSync(
@@ -125,8 +134,10 @@ async function queryWithGroq(
 // Search across multiple collections and combine results
 async function searchAllCollections(question: string, chromaClient: any) {
   const allResults: { document: string; metadata: any; distance: number }[] = [];
+
+  const collectionConfig = getCollectionConfig();
   
-  for (const config of COLLECTION_CONFIG) {
+  for (const config of collectionConfig) {
     try {
       const collection = await chromaClient.getCollection({ name: config.name });
       const results = await collection.query({
