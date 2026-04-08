@@ -84,6 +84,12 @@ npm run dev
 
 This will run the frontend and backend concurrently. If you want to run them separately you can use two terminals and run the same command in the frontend and backend directories.
 
+Go to `[http://localhost:3000](http://localhost:3000)` to use the App.
+
+It will look like the following:
+
+<img width="700" height="440" alt="image" src="https://github.com/user-attachments/assets/9668b2e0-237d-4772-a292-5477b52f846d" />
+
 ## Testing
 
 Unit tests are available on the backend
@@ -102,15 +108,17 @@ npm run test
 - Implement streaming response from Groq to improve user experience.
 - Show build setup in AI Response
 
-# Show Build Setup
+### Show Build Setup
 
 When a user asks a question on how to defeat a certain type of enemy in the game it would be beneficial to show a visual aid to the setup instead of text. To do this the chatbot can be given a schema on how to respond for the characters and their setup (weapons, pictos .etc)
 
 Here is a drawing of what it will look like in the UI.
 
-<img width="950" height="608" alt="image" src="https://github.com/user-attachments/assets/771f3650-9e86-43f9-a21f-a1652704c456" />
 
-The user can select each character to show the recommended setup.
+<img width="700" height="440" alt="image" src="https://github.com/user-attachments/assets/771f3650-9e86-43f9-a21f-a1652704c456" />
+
+
+The user can select each character to show their recommended setup.
 
 ## Acknowledgments
 
