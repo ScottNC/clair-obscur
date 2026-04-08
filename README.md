@@ -84,7 +84,7 @@ npm run dev
 
 This will run the frontend and backend concurrently. If you want to run them separately you can use two terminals and run the same command in the frontend and backend directories.
 
-Go to `[http://localhost:3000](http://localhost:3000)` to use the App.
+Go to `http://localhost:3000` to use the App.
 
 It will look like the following:
 
