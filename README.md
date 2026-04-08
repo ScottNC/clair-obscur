@@ -100,6 +100,17 @@ npm run test
 - Experiment with LangChain to improve RAG model.
 - Add user feedback to improve AI assistant's answers.
 - Implement streaming response from Groq to improve user experience.
+- Show build setup in AI Response
+
+# Show Build Setup
+
+When a user asks a question on how to defeat a certain type of enemy in the game it would be beneficial to show a visual aid to the setup instead of text. To do this the chatbot can be given a schema on how to respond for the characters and their setup (weapons, pictos .etc)
+
+Here is a drawing of what it will look like in the UI.
+
+<img width="950" height="608" alt="image" src="https://github.com/user-attachments/assets/771f3650-9e86-43f9-a21f-a1652704c456" />
+
+The user can select each character to show the recommended setup.
 
 ## Acknowledgments
 
